@@ -23,10 +23,13 @@ function createLayersStore() {
         
         return [...layers, newLayer.layerIndex];
       }),
-    close: (index: number) =>
+    close: (index: number|string) =>
       update((layers) => {
-        layers.splice(index, 1);
-        return layers;
+        if (typeof index === "number") {
+          layers.splice(index, 1);
+          return layers;
+        }
+        return layers.filter(l=> l !== index);
       }),
   };
 }

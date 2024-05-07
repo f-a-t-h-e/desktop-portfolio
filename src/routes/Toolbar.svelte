@@ -1,15 +1,6 @@
 <script lang="ts">
   import { windowsStore } from "$lib/windows.store";
   import Window from "./Window.svelte";
-
-  $: openFolders = $windowsStore.filter(
-    (w: IWindow & { windowIndex?: number }, i) => {
-      if (w.viewType === "folder") {
-        w.windowIndex = i;
-        return true;
-      }
-    }
-  ) as (IWindow & { windowIndex: number })[];
 </script>
 
 <div
@@ -31,18 +22,6 @@
   flex items-center justify-center rounded-2xl
   relative hover:bg-[#ffffff4d]"
     >
-      <!-- on:mousedown={(e) => {
-      e.stopPropagation();
-      isSelected = true;
-    }}
-    on:click={(e)=>{
-      e.stopPropagation();
-      windowsStore.open({
-        title: folder.name,
-        path: folder.path,
-        filesAndFolders: folder.contents,
-      });
-    }} -->
       <svg
         class="w-fit absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         stroke="currentColor"
@@ -66,7 +45,7 @@
           ? 'max-w-[1.85em]'
           : 'max-w-0'} overflow-hidden flex-wrap"
       >
-        {#each openFolders as _}
+        {#each $windowsStore as _}
           <span class="h-1 w-1 bg-green-500 block rounded-full"></span>
         {/each}
       </div>
@@ -76,26 +55,26 @@
     before:top-full before:h-4 before:w-full before:block before:bg-transparent before:absolute before:left-0
     bg-black border border-white p-2 rounded-lg"
     >
-      {#each openFolders as folderWindow}
+      {#each $windowsStore as folderWindow}
         <div
           class="w-48 h-40 rounded-md hover:bg-[#dcdcdc66] flex items-center justify-center relative"
         >
           <button
-            class="h-36 aspect-[48/40] bg-[#4d4c58] flex items-center justify-center cursor-pointer"
-            on:click={()=>{
-              windowsStore.open(folderWindow)
+            class="h-36 aspect-[48/40] bg-base-100 flex items-center justify-center cursor-pointer"
+            on:click={() => {
+              windowsStore.maximize(folderWindow.ID);
             }}
           >
             <span
-              class="text-white font-bold max-w-full text-center overflow-hidden"
-              >{folderWindow.title}</span
+              class="text-base-txt font-bold max-w-full text-center overflow-hidden"
+              >{folderWindow.target.name}</span
             >
           </button>
           <button
-            class="absolute end-2 top-2 text-3xl ms-1 text-white bg-[#4d4c58] hover:bg-[#09090a72] rounded-full flex items-center justify-center h-[1.25em] w-[1.25em]
+            class="absolute end-2 top-2 text-3xl ms-1 text-base-txt bg-base-100 hover:bg-[#09090a72] rounded-full flex items-center justify-center h-[1.25em] w-[1.25em]
             border border-white/35"
             on:click={() => {
-              windowsStore.close(folderWindow.windowIndex);
+              windowsStore.close(folderWindow.ID);
             }}
           >
             <svg
@@ -116,7 +95,7 @@
     </div>
   </div>
 </div>
-
-{#each $windowsStore as windowData, i}
-  <Window {windowData} windowIndex={i} />
+<!-- You need to track the items with `(windowData.ID)` to avoid the item being used by the HTMLElement before it after a deletion/revalidation -->
+{#each $windowsStore as windowData (windowData.ID)}
+  <Window {windowData} />
 {/each}

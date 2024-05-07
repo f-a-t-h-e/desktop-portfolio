@@ -1,26 +1,13 @@
 <script lang="ts">
+  import { contextMenuStore } from "$lib/contextMenu.store";
+  import { desktopStore } from "$lib/desktop.store";
+  import { fileOrFolderNamingStore } from "$lib/fileOrFolderNaming.store";
   import "../app.css";
+  import ContextMenue from "./ContextMenue.svelte";
   import Folder from "./Folder.svelte";
+  import NameFolder from "./NameFolder.svelte";
   import Toolbar from "./Toolbar.svelte";
   import Selection from "./selection.svelte";
-
-  const folders: IFolder[] = [
-    {
-      name: "about",
-      contents: [],
-      path: "/about",
-    },
-    {
-      name: "projects",
-      contents: [
-        { name: "kanban-task-management-web-app", path: "/projects", type: "svelte", isFile: true },
-        { name: "kanban-task-management-web-app", path: "/projects", type: "svelte", isFile: true },
-        { name: "kanban-task-management-web-app", path: "/projects", type: "svelte", isFile: true },
-        { name: "kanban-task-management-web-app", path: "/projects", type: "svelte", isFile: true },
-      ],
-      path: "/projects",
-    },
-  ];
 
   let desktopDimentions = {
     width: 0,
@@ -31,7 +18,9 @@
     startX: 0,
     startY: 0,
   };
+  let contextmenu: HTMLDivElement;
 </script>
+
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
@@ -42,20 +31,37 @@
   bind:clientWidth={desktopDimentions.width}
   bind:clientHeight={desktopDimentions.height}
   on:mousedown={(e) => {
-    desktopDimentions.down = true;
-    desktopDimentions.startX = e.clientX;
-    desktopDimentions.startY = e.clientY;
+    if (e.currentTarget === e.target) {
+      desktopDimentions.down = true;
+      desktopDimentions.startX = e.clientX;
+      desktopDimentions.startY = e.clientY;
+    }
   }}
   on:touchstart={(e) => {
-    if (e.targetTouches.length) {
+    if (e.currentTarget === e.target && e.targetTouches.length) {
       desktopDimentions.down = true;
       desktopDimentions.startX = e.targetTouches[0].clientX;
       desktopDimentions.startY = e.targetTouches[0].clientY;
     }
   }}
+  on:contextmenu={(e) => {
+    if (e.target === e.currentTarget) {
+      e.preventDefault();
+      contextMenuStore.open({
+        target: $desktopStore,
+        x: e.clientX,
+        y: e.clientY,
+        isOpen: true,
+      });
+    }
+  }}
 >
-  {#each folders as folder}
-    <Folder {folder} />
+  {#each Object.values($desktopStore.contents) as folder}
+    <Folder folder={{
+      name: folder.name,
+      path: folder.path,
+      target: folder
+    }} />
   {/each}
   <slot />
   <Selection
@@ -72,11 +78,13 @@
     bind:down={desktopDimentions.down}
   />
 </div>
+<NameFolder />
 <Toolbar />
+<ContextMenue />
 
 <style lang="postcss">
   :global(body) {
-    background-image: url(bg0.jpg);
+    background-image: url(/bg0.jpg);
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
