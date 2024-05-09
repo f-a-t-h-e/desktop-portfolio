@@ -14,6 +14,7 @@
     xTrns: 0,
     yTrns: 0,
   };
+
   let positions = {
     top: 0,
     right: 0,
@@ -27,8 +28,10 @@
     positions.left = $globalPositionStore.x + coordinates.xTrns;
     // positions.bottom -=  $globalPositionStore.y + coordinates.yTrns - positions.top;
     positions.top = $globalPositionStore.y + coordinates.yTrns;
-    if (fullScreenShow) {
+
+    if (offFullScreen) {
       fullScreenShow = false;
+      offFullScreen = false;
     }
     if (transitionOn) {
       transitionOn = false;
@@ -36,6 +39,7 @@
   }
   function handleUp(e: MouseEvent) {
     isDown = false;
+    offFullScreen = false;
   }
   function handleMouseDown(
     e: MouseEvent & {
@@ -52,11 +56,20 @@
     if (!coordinates.moved) {
       coordinates.moved = true;
     }
-    const { top, left } = e.currentTarget.getBoundingClientRect();
-    coordinates.xTrns = left - e.clientX;
-    coordinates.yTrns = top - e.clientY;
-    positions.left = left;
-    positions.top = top;
+    if (fullScreenShow) {
+      setTimeout(() => {
+        offFullScreen = true;
+      }, 300);
+      const { top, left, width } = e.currentTarget.getBoundingClientRect();
+      coordinates.xTrns = ((left - e.clientX) / width) * positions.width;
+      coordinates.yTrns = top - e.clientY;
+    } else {
+      const { top, left } = e.currentTarget.getBoundingClientRect();
+      coordinates.xTrns = left - e.clientX;
+      coordinates.yTrns = top - e.clientY;
+      positions.left = left;
+      positions.top = top;
+    }
   }
   // $: if (coordinates.moved) {
   //   // positions.bottom = positions.bottom + (coordinates.y + coordinates.yTrns - positions.top);
@@ -67,9 +80,11 @@
   //   positions.left = coordinates.x + coordinates.xTrns;
   // }
   let fullScreenShow = false;
+  let offFullScreen = false;
   let transitionOn = false;
   let windowContainer: HTMLDivElement;
-  $: if (windowData.isMinimized) {
+  let lockTransition = true;
+  $: if (!lockTransition || windowData.isMinimized) {
     transitionOn = true;
     setTimeout(() => {
       transitionOn = false;
@@ -81,6 +96,9 @@
   };
 
   onMount(() => {
+    setTimeout(() => {
+      lockTransition = false;
+    }, 100);
     globalPositionStore.addOnUp(handleUp);
     const { top, left, bottom, right, width, height } =
       windowContainer.getBoundingClientRect();

@@ -1,13 +1,12 @@
 <script lang="ts">
+  import "../app.css";
   import { contextMenuStore } from "$lib/contextMenu.store";
   import { desktopStore } from "$lib/desktop.store";
-  import { fileOrFolderNamingStore } from "$lib/fileOrFolderNaming.store";
-  import "../app.css";
-  import ContextMenue from "./ContextMenue.svelte";
-  import Folder from "./Folder.svelte";
-  import NameFolder from "./NameFolder.svelte";
-  import Toolbar from "./Toolbar.svelte";
-  import Selection from "./selection.svelte";
+  import ContextMenue from "../lib/Components/ContextMenue.svelte";
+  import Folder from "../lib/Components/Folder.svelte";
+  import NameFolder from "../lib/Components/NameFolder.svelte";
+  import Toolbar from "../lib/Components/Toolbar.svelte";
+  import Selection from "../lib/Components/Selection.svelte";
 
   let desktopDimentions = {
     width: 0,
