@@ -1,29 +1,41 @@
 <script lang="ts">
+  import Resizable from "$lib/Components/Resizable.svelte";
   import { contextMenuStore } from "$lib/contextMenu.store";
   import { desktopStore } from "$lib/desktop.store";
+  import { globalPositionStore } from "$lib/globalPosition.store";
   import { layersStore } from "$lib/layers.store";
   import { isFolder } from "$lib/system/Path";
   import { windowsStore } from "$lib/windows.store";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   export let windowData: (typeof $windowsStore)[number];
-
+  let isDown = false;
   const coordinates = {
-    x: 0,
-    y: 0,
     moved: false,
     xTrns: 0,
     yTrns: 0,
   };
-
-  function handleMove(e: MouseEvent) {
-    coordinates.x = e.clientX;
-    coordinates.y = e.clientY;
+  let positions = {
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+  };
+  $: if (isDown) {
+    // positions.right -=  $globalPositionStore.x + coordinates.xTrns - positions.left;
+    positions.left = $globalPositionStore.x + coordinates.xTrns;
+    // positions.bottom -=  $globalPositionStore.y + coordinates.yTrns - positions.top;
+    positions.top = $globalPositionStore.y + coordinates.yTrns;
     if (fullScreenShow) {
       fullScreenShow = false;
     }
     if (transitionOn) {
       transitionOn = false;
     }
+  }
+  function handleUp(e: MouseEvent) {
+    isDown = false;
   }
   function handleMouseDown(
     e: MouseEvent & {
@@ -33,6 +45,7 @@
     if (e.currentTarget !== e.target) {
       return;
     }
+    isDown = true;
     // if (transitionOn) {
     //   transitionOn = false;
     // }
@@ -40,25 +53,23 @@
       coordinates.moved = true;
     }
     const { top, left } = e.currentTarget.getBoundingClientRect();
-    //   (e.currentTarget.parentElement as HTMLDivElement).style.transform = ``
     coordinates.xTrns = left - e.clientX;
     coordinates.yTrns = top - e.clientY;
-    coordinates.x = e.clientX;
-    coordinates.y = e.clientY;
-    document.removeEventListener("mousemove", handleMove);
-    document.addEventListener("mousemove", handleMove);
-    document.addEventListener(
-      "mouseup",
-      () => {
-        document.removeEventListener("mousemove", handleMove);
-      },
-      { once: true }
-    );
+    positions.left = left;
+    positions.top = top;
   }
+  // $: if (coordinates.moved) {
+  //   // positions.bottom = positions.bottom + (coordinates.y + coordinates.yTrns - positions.top);
+  //   height = positions.bottom + (coordinates.y + coordinates.yTrns - positions.top);
+  //   positions.top = coordinates.y + coordinates.yTrns;
+  //   // positions.right = positions.right + (coordinates.x + coordinates.xTrns - positions.left);
+  //   width = positions.right + (coordinates.x + coordinates.xTrns - positions.left);
+  //   positions.left = coordinates.x + coordinates.xTrns;
+  // }
   let fullScreenShow = false;
   let transitionOn = false;
   let windowContainer: HTMLDivElement;
-  $: if (typeof windowData.isMinimized) {
+  $: if (windowData.isMinimized) {
     transitionOn = true;
     setTimeout(() => {
       transitionOn = false;
@@ -69,23 +80,40 @@
     next: `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM15.9999 8H14.6499V12H15.9999V8ZM9.34609 9.70937L15.405 17.5379L16.4591 16.7293L9.68281 8H8V15.9969H9.34609V9.70937Z"></path></svg>`,
   };
 
-  onDestroy(() => {
-    document.removeEventListener("mousemove", handleMove);
+  onMount(() => {
+    globalPositionStore.addOnUp(handleUp);
+    const { top, left, bottom, right, width, height } =
+      windowContainer.getBoundingClientRect();
+    positions = {
+      top,
+      left,
+      bottom: innerHeight - bottom,
+      right: innerWidth - right,
+      width,
+      height,
+    };
+    coordinates.xTrns = 0;
+    coordinates.yTrns = 0;
+    coordinates.moved = true;
   });
+  onDestroy(() => {
+    globalPositionStore.removeOnUp(handleUp);
+  });
+  const minW = 368;
+  const minH = 230;
 </script>
 
 <!-- You do need `active:transition-none` or you will find the toggle of the transition making the window swings on mouse down -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="fixed w-3/4 h-2/4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100
+  class="absolute w-3/4 h-2/4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100
   flex flex-col {transitionOn ? 'transition-all duration-300 ease-linear' : ''}
   active:transition-none rounded-lg shadow shadow-black focus:opacity-30
   "
   style={`z-index: ${$layersStore.indexOf(windowData.layerIndex) + 10};
-  ${coordinates.moved ? `--tw-translate-x:${coordinates.xTrns}px;--tw-translate-y:${coordinates.yTrns}px;top: ${coordinates.y}px;left: ${coordinates.x}px;` : ``}
-  ${fullScreenShow ? `width:100vw;height:100vh;top:0px;left:0px;--tw-translate-x:0px;--tw-translate-y:0px;` : ""}
+  ${coordinates.moved ? `top: ${positions.top}px;left: ${positions.left}px;--tw-translate-x: 0px;--tw-translate-y: 0px;width:${positions.width}px;height:${positions.height}px;` : ``}
+  ${fullScreenShow ? `top:0px;left:0px;width:100vw;height:100vh;--tw-translate-x:0px;--tw-translate-y:0px;` : ""}
   ${windowData.isMinimized ? `--tw-scale-x:0;--tw-scale-y:0;top: 100%;left: 50%;--tw-translate-x: -50%;` : ``}
-  
   `}
   bind:this={windowContainer}
   on:mousedown={(e) => {
@@ -475,4 +503,5 @@
       {/if}
     </div>
   </div>
+  <Resizable bind:positions {minH} {minW} />
 </div>
