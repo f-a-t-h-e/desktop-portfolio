@@ -1,33 +1,22 @@
 <script lang="ts">
-  export let down = false;
-  export let boundX:{start:number;end:number};
-  export let boundY:{start:number;end:number};
-  export let startX:number;
-  export let startY:number;
+  import { globalPositionStore } from "$lib/globalPosition.store";
+  export let abs = true;
+  export let down: boolean;
+  export let boundX: { start: number; end: number };
+  export let boundY: { start: number; end: number };
+  export let startX: number;
+  export let startY: number;
+  export let offsetX: number;
+  export let offsetY: number;
 
-  $: mouseMove = down
-    ? function (
-        e: MouseEvent & {
-          currentTarget: EventTarget & Document;
-        }
-      ) {
-        coordinates.x = e.clientX;
-        coordinates.y = e.clientY;
-      }
-    : function (..._: any) {};
-  $: touchMove = down
-    ? function (
-        e: TouchEvent & {
-          currentTarget: EventTarget & Document;
-        }
-      ) {
-        if (e.targetTouches.length) {
-          coordinates.x = e.targetTouches[0].clientX;
-          coordinates.y = e.targetTouches[0].clientY;
-        }
-      }
-    : function (..._: any) {};
+  $: if (down) {
+    // console.log(
+    //   `x:${$globalPositionStore.x}, offX:${offsetX}, y:${$globalPositionStore.y}, offY:${offsetY}`
+    // );
 
+    coordinates.x = $globalPositionStore.x - offsetX;
+    coordinates.y = $globalPositionStore.y - offsetY;
+  }
   const coordinates = {
     _x: 0,
     get x() {
@@ -38,9 +27,11 @@
       }
     },
     set x(val: number) {
+      // val
+
       if (val > boundX.end) {
         val = boundX.end;
-      }else if (val < boundX.start) {
+      } else if (val < boundX.start) {
         val = boundX.start;
       }
       this._x = val;
@@ -56,7 +47,7 @@
     set y(val: number) {
       if (val > boundY.end) {
         val = boundY.end;
-      }else if (val < boundY.start) {
+      } else if (val < boundY.start) {
         val = boundY.start;
       }
       this._y = val;
@@ -72,7 +63,7 @@
     set xStart(val: number) {
       if (val > boundX.end) {
         val = boundX.end;
-      }else if (val < boundX.start) {
+      } else if (val < boundX.start) {
         val = boundX.start;
       }
       this._xStart = val;
@@ -89,7 +80,7 @@
     set yStart(val: number) {
       if (val > boundX.end) {
         val = boundX.end;
-      }else if (val < boundX.start) {
+      } else if (val < boundX.start) {
         val = boundX.start;
       }
       this._yStart = val;
@@ -101,30 +92,12 @@
   $: coordinates.yStart = startY;
 </script>
 
-<svelte:document
-  on:mouseup={() => {
-    down = false;
-    coordinates.xStart = 0;
-    coordinates.yStart = 0;
-  }}
-  on:mousemove={mouseMove}
-  on:touchmove={touchMove}
-  on:touchcancel={() => {
-    down = false;
-    coordinates.xStart = 0;
-    coordinates.yStart = 0;
-  }}
-  on:touchend={() => {
-    coordinates.xStart = 0;
-    coordinates.yStart = 0;
-    down = false;
-  }}
-/>
+<!-- @todo : Remove these and enable it from the layout (it's enables from the window) -->
 
 <div
   class="{down
     ? 'bg-green-600/60 border'
-    : ''} pointer-events-none border-green-800 fixed hidden sm:block"
+    : ''} pointer-events-none border-green-800 {abs ? 'absolute' : 'fixed'}"
   style="top: {coordinates.yStart}px;left: {coordinates.xStart}px;height: {coordinates.y -
     coordinates.yStart}px; width: {coordinates.x - coordinates.xStart}px;"
 ></div>

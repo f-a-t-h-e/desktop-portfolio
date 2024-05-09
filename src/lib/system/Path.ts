@@ -3,6 +3,8 @@ import type FilePath from "./FilePath";
 import type FolderPath from "./FolderPath";
 
 export default class Path {
+  static id = 0;
+  id!: number;
   set name (val:string){
     this._name = val.trim();
     if (isFolder(this)) {
@@ -81,6 +83,7 @@ export default class Path {
     isFile: boolean;
     desktop: DesktopPath;
   }) {
+    this.id = Path.id++
     /**
      * The order matters here
      */

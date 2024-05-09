@@ -22,7 +22,7 @@
   <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
   <form
     bind:this={targetForm}
-    class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 bg-base-200 border border-base-txt/75
+    class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 bg-neutral border border-ico
 rounded-lg flex flex-col px-3 py-3 gap-2 z-[10000]
 "
     on:mousedown|stopPropagation
@@ -32,8 +32,8 @@ rounded-lg flex flex-col px-3 py-3 gap-2 z-[10000]
     <div class="grid grid-cols-4 gap-2">
       <input
         type="text"
-        class="rounded text-base px-3 py-1 max-w-full bg-base-100 text-base-txt col-span-3 invalid:text-red-600
-        [&:invalid~button]:pointer-events-none [&:invalid~button]:opacity-25
+        class="rounded text-base px-3 py-1 max-w-full bg-base-200 text-base-txt col-span-3 invalid:text-red-600
+        [&:invalid~button]:pointer-events-none [&:invalid~button]:opacity-25 outline-primary focus:outline focus:outline-2
         "
         bind:this={targetInput}
         {value}
@@ -64,8 +64,5 @@ rounded-lg flex flex-col px-3 py-3 gap-2 z-[10000]
         </button>
       {/if}
     </div>
-    {#if !value}
-      <span class="text-sm">Please enter a name</span>
-    {/if}
   </form>
 {/if}

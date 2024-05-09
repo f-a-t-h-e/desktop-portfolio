@@ -1,39 +1,51 @@
 import { readable } from "svelte/store";
 
 function createGlobalPositionStore() {
-  const onUps: ((e: MouseEvent) => unknown | Promise<unknown>)[] = [];
-  async function onUp(e: MouseEvent) {
+  const onUps: (() => unknown | Promise<unknown>)[] = [];
+  async function onUp() {
     for (let i = 0; i < onUps.length; i++) {
-      await onUps[i](e);
+      await onUps[i]();
     }
+  }
+  const docUtilFunctions = {
+    onUp,
+    onMove: (e:MouseEvent)=>{},
+    onTouchMove: (e:TouchEvent)=>{},
+    set: (params:{x:number,y:number})=>{}
   }
   const { subscribe } = readable<{ x: number; y: number }>(
     { x: 0, y: 0 },
     function start(set) {
-      function onMove(e: MouseEvent) {
+      docUtilFunctions.onMove = function onMove(e:MouseEvent) {        
         set({
           x: e.clientX,
           y: e.clientY,
         });
       }
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
+      docUtilFunctions.onTouchMove = function onTouchMove(e:TouchEvent) {
+        if (e.targetTouches.length) {
+          // e.preventDefault();
+          set({
+            x:e.targetTouches[0].clientX,
+            y:e.targetTouches[0].clientY
+          })
+        }
+      }
+      docUtilFunctions.set = set;
       return function stop() {
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
       };
     }
   );
 
   return {
     subscribe,
-    addOnUp: (fn: (e: MouseEvent) => unknown) => {
+    addOnUp: (fn: () => unknown) => {
       if (onUps.includes(fn)) {
         return;
       }
       onUps.push(fn);
     },
-    removeOnUp: (fn: (e: MouseEvent) => unknown) => {
+    removeOnUp: (fn: () => unknown) => {
       let added = false;
       for (let i = 0; i < onUps.length; i++) {
         const savedFn = onUps[i];
@@ -49,6 +61,7 @@ function createGlobalPositionStore() {
         onUps.pop();
       }
     },
+    docUtilFunctions
   };
 }
 

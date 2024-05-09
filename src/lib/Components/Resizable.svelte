@@ -36,8 +36,10 @@
     se: true,
     sw: true,
   };
-  export let minW: number;
-  export let minH: number;
+  export let minW: number = 100;
+  export let minH: number = 100;
+  // export let maxW: number = 1000;
+  // export let maxH: number = 1000;
   let x: number;
   let y: number;
 
@@ -50,7 +52,7 @@
   let seOn = false;
   let swOn = false;
   let nwOn = false;
-  function onUp(e: MouseEvent) {
+  function onUp() {
     isOn = false;
     nOn = false;
     sOn = false;
@@ -171,6 +173,12 @@
       wOn = true;
       cursor = "ew-resize";
     }}
+    on:touchstart={(e) => {
+      e.preventDefault();
+      isOn = true;
+      wOn = true;
+      cursor = "ew-resize";
+    }}
     class="block cursor-ew-resize absolute w-1 h-[calc(100%-.5rem)] top-1 left-0 opacity-0"
   ></span>
 {/if}
@@ -178,6 +186,12 @@
 {#if trunOnFor.e}
   <span
     on:mousedown={(e) => {
+      e.preventDefault();
+      isOn = true;
+      eOn = true;
+      cursor = "ew-resize";
+    }}
+    on:touchstart={(e) => {
       e.preventDefault();
       isOn = true;
       eOn = true;
@@ -195,6 +209,12 @@
       nOn = true;
       cursor = "ns-resize";
     }}
+    on:touchstart={(e) => {
+      e.preventDefault();
+      isOn = true;
+      nOn = true;
+      cursor = "ns-resize";
+    }}
     class="block cursor-ns-resize absolute w-[calc(100%-.5rem)] h-1 top-0 left-1 opacity-0"
   ></span>
 {/if}
@@ -202,6 +222,12 @@
 {#if trunOnFor.s}
   <span
     on:mousedown={(e) => {
+      e.preventDefault();
+      isOn = true;
+      sOn = true;
+      cursor = "ns-resize";
+    }}
+    on:touchstart={(e) => {
       e.preventDefault();
       isOn = true;
       sOn = true;
@@ -219,6 +245,12 @@
       nwOn = true;
       cursor = "nwse-resize";
     }}
+    on:touchstart={(e) => {
+      e.preventDefault();
+      isOn = true;
+      nwOn = true;
+      cursor = "nwse-resize";
+    }}
     class="block cursor-nwse-resize absolute w-1 h-1 top-0 left-0 opacity-0"
   ></span>
 {/if}
@@ -226,6 +258,12 @@
 {#if trunOnFor.ne}
   <span
     on:mousedown={(e) => {
+      e.preventDefault();
+      isOn = true;
+      neOn = true;
+      cursor = "nesw-resize";
+    }}
+    on:touchstart={(e) => {
       e.preventDefault();
       isOn = true;
       neOn = true;
@@ -243,6 +281,12 @@
       swOn = true;
       cursor = "nesw-resize";
     }}
+    on:touchstart={(e) => {
+      e.preventDefault();
+      isOn = true;
+      swOn = true;
+      cursor = "nesw-resize";
+    }}
     class="block cursor-nesw-resize absolute w-1 h-1 bottom-0 left-0 opacity-0"
   ></span>
 {/if}
@@ -250,6 +294,12 @@
 {#if trunOnFor.se}
   <span
     on:mousedown={(e) => {
+      e.preventDefault();
+      isOn = true;
+      seOn = true;
+      cursor = "nwse-resize";
+    }}
+    on:touchstart={(e) => {
       e.preventDefault();
       isOn = true;
       seOn = true;
