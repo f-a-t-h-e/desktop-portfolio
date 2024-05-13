@@ -11,22 +11,59 @@
   import { getPathFromStringAndDesktop } from "$lib/utils/getPathUtils";
   import { globalWindowDetailsStore } from "$lib/globalWindowDetails.store";
   import AsideNav from "./AsideNav.svelte";
-  //
+  // Exports
   export let windowData: (typeof $windowsStore)[number];
-  //
+  // Normal reactive variables
+  /**
+   * Used to change the local positions only when the user is pressing down the top bar of this window component
+   */
   let isDown = false;
-
+  /**
+   * Used to detect the current mode of the fullScreen
+   */
   let fullScreenShow = false;
+  /**
+   * Used to disable fullScreen mode on the next move, to make the fullScreen mode applied when the user is pressing down but not moving the cursor
+   */
   let offFullScreen = false;
+  /**
+   * Used to go fullScreen using the grapping
+   */
   let goFull = false;
+  /**
+   * Used to remove the action of disabling the fullScreen to avoid immediate fullScreen disabling
+   */
   let offFullScreenTimeout: number;
+  /**
+   * Used to set the `width` style relatively in the fullScreen mode
+   */
   let fullScreenWidthRatio = 0;
+  /**
+   * Used to set the `left` style relatively in the fullScreen mode
+   */
   let fullScreenXRatio = 0;
 
+  /**
+   * Used to detect if the transition is enabled
+   */
   let transitionOn = false;
+  /**
+   * Used to make sure that the transition will not be disabled by other normal places
+   * > usefull when disabling fullScreen mode by grapping the top bar of the window
+   */
   let forceTransition = false;
+  /**
+   * The top level element in this component to
+   * > usefull to access it for its dimentions for the initial setup in the onMount function
+   */
   let windowContainer: HTMLDivElement;
+  /**
+   * Used in the initial setup, when the component is getting mounted its value `isMenemized` on the [`windowData`]() gets changed, and this value has to be accessable from outside the component in the store, so we have to listen to this action and need to do that change only when it's done after the component' mount
+   */
   let lockTransition = true;
+  /**
+   * Used to set relative dimentions between the component position and the cursor position
+   */
   const coordinates = {
     moved: false,
     xTrns: 0,
@@ -41,36 +78,49 @@
     height: 0,
   };
 
-  //
+  // Dependent reactive variables
+  /**
+   * To position properties using something like the resize feature the components need to know their postions to get the cursor positions relative to them.
+   */
   $: reposition = `${isDown}${fullScreenShow}`;
+  /**
+   * Minimum width of this `window` component
+   */
   $: minW =
     $globalWindowDetailsStore.w < 640
       ? 345
       : $globalWindowDetailsStore.w < 768
         ? 470
         : 675;
+  /**
+   * Minimum height of this `window` component
+   */
   let minH = 330;
+
+  // Dependent blocks
   $: if (isDown) {
+    // The overlay that appears behind this `window` component when going fullScreen using the graping feature
+    if (!fullScreenShow) {
+      if ($globalPositionStore.x < 20) {
+        fullScreenWidthRatio = 0.5;
+      } else if ($globalPositionStore.x > innerWidth - 20) {
+        fullScreenXRatio = 0.5;
+        fullScreenWidthRatio = 0.5;
+      } else {
+        fullScreenWidthRatio = 1;
+        fullScreenXRatio = 0;
+      }
+    }
     positions.left = $globalPositionStore.x + coordinates.xTrns;
     positions.top = $globalPositionStore.y + coordinates.yTrns;
     if (positions.left < 0) {
       if (positions.left > -50) {
         positions.left = 0;
       }
-      if (!fullScreenShow) {
-        fullScreenWidthRatio = 0.5;
-      }
     } else if (positions.left + positions.width > innerWidth) {
       if (positions.left + positions.width < innerWidth + 50) {
         positions.left = innerWidth - positions.width;
       }
-      if (!fullScreenShow) {
-        fullScreenXRatio = 0.5;
-        fullScreenWidthRatio = 0.5;
-      }
-    } else if (!fullScreenShow) {
-      fullScreenWidthRatio = 1;
-      fullScreenXRatio = 0;
     }
     if (positions.top < 0) {
       goFull = true;
@@ -245,10 +295,10 @@
 
 <div
   class="{goFull
-    ? 'bg-green-600/60 border w-screen h-screen'
+    ? 'bg-green-600/30 border w-screen h-screen'
     : ''} pointer-events-none border-green-800 fixed transition-all duration-300 ease-linear"
   style={goFull
-    ? `top:0px;left:${100 * fullScreenXRatio}%;height:100vh;width:${100 * fullScreenWidthRatio}vw;`
+    ? `top:0px;left:${100 * fullScreenXRatio}%;height:100vh;width:${100 * fullScreenWidthRatio}vw;z-index: ${$layersStore.indexOf(windowData.layerIndex) + 10};`
     : `top: ${positions.top + positions.height * 0.5}px;left: ${positions.left + positions.width * 0.5}px;height:0px;width:0px;`}
 ></div>
 <!-- -------------------------------------------------------------------------- -->
@@ -433,5 +483,7 @@
       />
     {/if}
   </div>
-  <Resizable bind:positions {minH} {minW} />
+  {#if !fullScreenShow}
+    <Resizable bind:positions {minH} {minW} />
+  {/if}
 </div>

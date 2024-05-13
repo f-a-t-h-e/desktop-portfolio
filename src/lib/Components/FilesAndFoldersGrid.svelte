@@ -63,7 +63,7 @@
   {#if target && Object.keys(target.contents).length}
     <div
       bind:this={theDiv}
-      class="grid w-full h-full relative"
+      class="grid w-full h-full relative z-0"
       on:mousedown={(e) => {
         if (e.currentTarget === e.target) {
           e.preventDefault();
@@ -84,15 +84,6 @@
         }
       }}
     >
-      <Selection
-        {down}
-        {boundX}
-        {boundY}
-        {startX}
-        {startY}
-        {offsetX}
-        {offsetY}
-      />
       {#each Object.values(target.contents) as fileOrFolder (fileOrFolder.id)}
         <button
           class="flex items-center px-3 h-fit gap-1 cursor-pointer hover:underline decoration-white min-w-fit focus:bg-primary-light outline-none"
@@ -142,6 +133,15 @@
           </span>
         </button>
       {/each}
+      <Selection
+        {down}
+        {boundX}
+        {boundY}
+        {startX}
+        {startY}
+        {offsetX}
+        {offsetY}
+      />
     </div>
   {:else}
     <div

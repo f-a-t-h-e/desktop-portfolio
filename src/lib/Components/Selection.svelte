@@ -96,8 +96,8 @@
 
 <div
   class="{down
-    ? 'bg-green-600/60 border'
-    : ''} pointer-events-none border-green-800 {abs ? 'absolute' : 'fixed'}"
+    ? 'bg-green-600/30 border'
+    : ''} pointer-events-none border-green-800 {abs ? 'absolute' : 'fixed'} z-[-1]"
   style="top: {coordinates.yStart}px;left: {coordinates.xStart}px;height: {coordinates.y -
     coordinates.yStart}px; width: {coordinates.x - coordinates.xStart}px;"
 ></div>

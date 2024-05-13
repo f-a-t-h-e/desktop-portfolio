@@ -8,7 +8,6 @@ export default class Path {
   set name (val:string){
     this._name = val.trim();
     if (isFolder(this)) {
-      
       this._path = `${this.parent.path}${this._name}"/"`;
       const keys = Object.keys(this.contents);
       for (let key = 0; key < keys.length; key++) {

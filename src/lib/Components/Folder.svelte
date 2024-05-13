@@ -4,13 +4,30 @@
   import type FolderPath from "$lib/system/FolderPath";
   import type Path from "$lib/system/Path";
   import { windowsStore } from "$lib/windows.store";
-
+  
+  export let i:number;
+  export let isDragging: number|number[]|null = null;
   export let folder: {
     path: string;
     name: string;
     target: FolderPath | DesktopPath;
   };
   let isSelected = false;
+
+  function dragStart(
+    event: DragEvent & {
+      currentTarget: EventTarget & HTMLButtonElement;
+    },
+    isFile: boolean,
+    itemIndex: number
+  ) {
+    isDragging = i;
+    // The data we want to make available when the element is dropped
+    // is the index of the item being dragged and
+    // the index of the basket from which it is leaving.
+    const data = { isFile, itemIndex };
+    event.dataTransfer?.setData("text/plain", JSON.stringify(data));
+  }
 </script>
 
 <button
@@ -27,6 +44,9 @@
       desktop: $desktopStore,
     });
   }}
+  draggable={true}
+  on:dragstart={(event) => dragStart(event, false, i)}
+  on:dragend={e=>isDragging=null}
 >
   <svg
   class="rounded-lg"
