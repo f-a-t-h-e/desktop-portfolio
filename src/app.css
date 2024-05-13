@@ -7,6 +7,6 @@
     @apply select-none;
   }
   .btn {
-    @apply bg-base-200 text-base-txt disabled:bg-base-200-dis disabled:text-base-200-dis-txt;
+    @apply bg-base-200 text-base-txt disabled:bg-base-200-dis disabled:text-base-200-dis-txt disabled:pointer-events-none;
   }
 }

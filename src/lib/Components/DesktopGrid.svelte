@@ -4,10 +4,12 @@
   import { globalPositionStore } from "$lib/globalPosition.store";
   import { onDestroy, onMount } from "svelte";
   import { isFolder } from "$lib/system/Path";
-  import { globalWindowDetailsStore } from "$lib/globalWindowDetails.store";
-  import Folder from "./Folder.svelte";
+  import FolderItem from "./FolderItem.svelte";
   import Selection from "./Selection.svelte";
   import DropArea from "./DropArea.svelte";
+  import FileItem from "./FileItem.svelte";
+  import type FolderPath from "$lib/system/FolderPath";
+  import type FilePath from "$lib/system/FilePath";
 
   let desktopDimentions = {
     width: 0,
@@ -18,10 +20,58 @@
     startX: 0,
     startY: 0,
   };
-  let isDragging: null | number | number[] = null;
+  /**
+   * The current anchor item index getting dragged, this index is the same as the key in `selectedItems` & `$desktopStore.gridItems`
+   */
+  let isDragging: null | number = null;
+  /**
+   * The current `DropArea` the drag is over
+   */
+  let isDraggingOver: null | number = null;
+  let selectedItems: { [key: number]: FilePath | FolderPath } = {};
+  let selectableItems:{
+    item: FilePath | FolderPath;
+    i: number;
+    spans?: HTMLSpanElement[] | undefined;
+  }[] = [];
+  $: if ($desktopStore.gridItems) {
+    selectableItems = $desktopStore.gridItems.reduce(
+    (prev, item, i) => {
+      if (item) {
+        const savdItem = selectableItems.find(v=>v.i===i);
+        if (savdItem && savdItem.item === item) {
+          prev.push(savdItem);
+        }else{
+          prev.push({
+            item,
+            i,
+          });
+        }
+      }
+      return prev;
+    },
+    [] as {
+      item: FilePath | FolderPath;
+      i: number;
+      spans?: HTMLSpanElement[];
+    }[]
+  );
+  }
+  
   // let contextmenu: HTMLDivElement;
   function onUp() {
     desktopDimentions.down = false;
+  }
+  function getTheObjDetails(i: number): {
+    item: FilePath | FolderPath;
+    i: number;
+    spans?: HTMLSpanElement[] | undefined;
+  } {
+    return selectableItems.find((val) => val.i === i)!;
+  }
+  $: if (typeof isDraggingOver == "number") {
+    // draggingElements
+  } else {
   }
   onMount(() => {
     globalPositionStore.addOnUp(onUp);
@@ -32,31 +82,46 @@
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- @todo : Use `ResizeObserver` instead of binding to the width and height like this -->
 <div
   dir="rtl"
   id="desktop"
-  class="w-full h-full p-1 z-0
-  grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] grid-rows-[repeat(auto-fill,minmax(4.5rem,1fr))]
+  class="w-full h-full p-0 z-0
+  grid grid-cols-[repeat(auto-fill,minmax(6.125rem,1fr))] grid-rows-[repeat(auto-fill,minmax(6.125rem,1fr))]
   items-center justify-items-center"
   bind:clientWidth={desktopDimentions.width}
   bind:clientHeight={desktopDimentions.height}
   on:mousedown={(e) => {
     if (e.currentTarget === e.target) {
-      desktopDimentions.down = true;
       desktopDimentions.startX = e.clientX;
       desktopDimentions.startY = e.clientY;
+      desktopDimentions.down = true;
+      if (
+        $globalPositionStore.x !== e.clientX ||
+        $globalPositionStore.y !== e.clientY
+      ) {
+        globalPositionStore.docUtilFunctions.set({
+          x: e.clientX,
+          y: e.clientY,
+        });
+      }
     }
   }}
   on:touchstart={(e) => {
     if (e.currentTarget === e.target && e.targetTouches.length) {
-      desktopDimentions.down = true;
       desktopDimentions.startX = e.targetTouches[0].clientX;
       desktopDimentions.startY = e.targetTouches[0].clientY;
+      desktopDimentions.down = true;
     }
-    globalPositionStore.docUtilFunctions.set({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY,
-    });
+    if (
+      $globalPositionStore.x !== e.targetTouches[0].clientX ||
+      $globalPositionStore.y !== e.targetTouches[0].clientY
+    ) {
+      globalPositionStore.docUtilFunctions.set({
+        x: e.targetTouches[0].clientX,
+        y: e.targetTouches[0].clientY,
+      });
+    }
   }}
   on:contextmenu={(e) => {
     if (e.target === e.currentTarget) {
@@ -71,42 +136,53 @@
     }
   }}
 >
-  <!-- {#each Object.values($desktopStore.contents) as path (path.id)}
-    {#if isFolder(path)}
-      <Folder
-        folder={{
-          name: path.name,
-          path: path.path,
-          target: path,
-        }}
-      />
-    {:else}
-      <div>{path}</div>
-    {/if}
-  {/each} -->
-  {#each $desktopStore.gridItems as item, i (i)}
+  {#each $desktopStore.gridItems as item, i}
     {#if item}
       {#if isFolder(item)}
-        <Folder
-          folder={{
+        <FolderItem
+          bind:selectableItems
+          targetFolder={{
             name: item.name,
             path: item.path,
             target: item,
           }}
           {i}
-          bind:isDragging={isDragging}
+          bind:isDragging
+          bind:selectedItems
         />
       {:else}
-        <div>{item}</div>
+        <FileItem
+          bind:selectableItems
+          targetFile={{
+            name: item.name,
+            path: item.path,
+            target: item,
+          }}
+          {i}
+          bind:isDragging
+          bind:selectedItems
+        />
       {/if}
     {:else if typeof isDragging === "number"}
+      <!-- {:else} -->
       <DropArea
-      {i}
+        {i}
+        bind:draggedTarget={isDragging}
+        bind:isDraggingOver
+        bind:selectedItems
       />
+      <!-- You have to use this for now so the elements are placed in the correct place -->
+      <!-- @todo : get the number of columns and rows so you don't need this additional elements -->
+    {:else}
+      <span></span>
     {/if}
   {/each}
   <slot />
+  <!-- {#if  desktopDimentions.down} -->
+
   <Selection
+    {selectableItems}
+    bind:selectedItems
     boundY={{
       start: desktopDimentions.boundStartY,
       end: desktopDimentions.height,
@@ -121,4 +197,5 @@
     offsetX={0}
     offsetY={0}
   />
+  <!-- {/if} -->
 </div>

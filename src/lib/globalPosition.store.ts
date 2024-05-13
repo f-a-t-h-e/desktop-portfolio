@@ -9,31 +9,30 @@ function createGlobalPositionStore() {
   }
   const docUtilFunctions = {
     onUp,
-    onMove: (e:MouseEvent)=>{},
-    onTouchMove: (e:TouchEvent)=>{},
-    set: (params:{x:number,y:number})=>{}
-  }
+    onMove: (e: MouseEvent) => {},
+    onTouchMove: (e: TouchEvent) => {},
+    set: (params: { x: number; y: number }) => {},
+  };
   const { subscribe } = readable<{ x: number; y: number }>(
     { x: 0, y: 0 },
     function start(set) {
-      docUtilFunctions.onMove = function onMove(e:MouseEvent) {        
+      docUtilFunctions.onMove = function onMove(e: MouseEvent) {
         set({
           x: e.clientX,
           y: e.clientY,
         });
-      }
-      docUtilFunctions.onTouchMove = function onTouchMove(e:TouchEvent) {
+      };
+      docUtilFunctions.onTouchMove = function onTouchMove(e: TouchEvent) {
         if (e.targetTouches.length) {
           // e.preventDefault();
           set({
-            x:e.targetTouches[0].clientX,
-            y:e.targetTouches[0].clientY
-          })
+            x: e.targetTouches[0].clientX,
+            y: e.targetTouches[0].clientY,
+          });
         }
-      }
-      docUtilFunctions.set = set;
-      return function stop() {
       };
+      docUtilFunctions.set = set;
+      return function stop() {};
     }
   );
 
@@ -61,7 +60,7 @@ function createGlobalPositionStore() {
         onUps.pop();
       }
     },
-    docUtilFunctions
+    docUtilFunctions,
   };
 }
 
