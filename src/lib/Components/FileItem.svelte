@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { desktopStore } from "$lib/desktop.store";
   import type FilePath from "$lib/system/FilePath";
   import type FolderPath from "$lib/system/FolderPath";
+  import { windowsStore } from "$lib/windows.store";
 
   export let selectableItems: {
     item: FilePath | FolderPath;
@@ -23,10 +25,10 @@
         item.spans = spans;
         return true;
       }
-    });    
+    });
     // selectableItems = {...selectableItems};
   }
-  
+
   function dragStart(
     e: DragEvent & {
       currentTarget: EventTarget & HTMLButtonElement;
@@ -44,8 +46,10 @@
     class="text-6xl cursor-pointer active:scale-95
 flex flex-col items-center
 relative
-{selectedItems[i] ? '[&>*]:bg-primary/60' : ''}
-"
+{selectedItems[i] ? '[&>*]:bg-primary/60' : ''}"
+    on:dblclick={(e) => {
+      windowsStore.open(targetFile.target);
+    }}
     draggable={true}
     on:dragstart={(event) => dragStart(event, false, i)}
     on:dragend={(e) => {
@@ -70,11 +74,11 @@ relative
       }
     }}
     on:click={(e) => {
-        if (e.screenX !== 0 && e.screenY !== 0) {
-          if (Object.keys(selectedItems).length) {
-            if (!e.shiftKey && !e.ctrlKey) {
-              selectedItems = { [i]: targetFile.target };
-            }
+      if (e.screenX !== 0 && e.screenY !== 0) {
+        if (Object.keys(selectedItems).length) {
+          if (!e.shiftKey && !e.ctrlKey) {
+            selectedItems = { [i]: targetFile.target };
+          }
         }
       }
     }}

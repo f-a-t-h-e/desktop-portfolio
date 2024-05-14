@@ -5,7 +5,7 @@ import Path from "./Path";
 export default class FilePath extends Path {
   declare isFile: true;
   declare contents: TFileContent;
-  fileType!: "svelte"|"next";
+  fileType!: "code"|"svelte"|"next";
   constructor({
     contents,
     fileType="svelte",
@@ -15,7 +15,7 @@ export default class FilePath extends Path {
     parent: FolderPath|DesktopPath;
     desktop: DesktopPath;
     contents: TFileContent;
-    fileType?: "svelte"|"next";
+    fileType?: "code"|"svelte"|"next";
   }) {
     super({ ...params, isFile: true });
     this.contents = contents;

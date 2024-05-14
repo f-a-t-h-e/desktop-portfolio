@@ -2,15 +2,9 @@
   import Resizable from "$lib/Components/Resizable.svelte";
   import { globalPositionStore } from "$lib/globalPosition.store";
   import { layersStore } from "$lib/layers.store";
-  import { isFolder } from "$lib/system/Path";
   import { windowsStore } from "$lib/windows.store";
   import { onDestroy, onMount } from "svelte";
-  import FilesAndFoldersGrid from "./FilesAndFoldersGrid.svelte";
-  import type FilePath from "$lib/system/FilePath";
-  import type FolderPath from "$lib/system/FolderPath";
-  import { getPathFromStringAndDesktop } from "$lib/utils/getPathUtils";
   import { globalWindowDetailsStore } from "$lib/globalWindowDetails.store";
-  import AsideNav from "./AsideNav.svelte";
   // Exports
   export let windowData: (typeof $windowsStore)[number];
   // Normal reactive variables
@@ -228,41 +222,6 @@
       });
     }
   }
-  function pushToHistory(fileOrFolder: FilePath | FolderPath) {
-    if (fileOrFolder === windowData.target) {
-      return;
-    }
-    if (
-      fileOrFolder.path === windowData.history[windowData.historyPointer - 1]
-    ) {
-      navigateInHistory(-1);
-      return;
-    }
-    if (isFolder(fileOrFolder)) {
-      windowData.history.length = 1 + windowData.historyPointer;
-      windowData.history.push(fileOrFolder.path);
-      ++windowData.historyPointer;
-      windowData.target = fileOrFolder;
-
-      windowsStore.refresh();
-    } else {
-      console.log("Openning files is not implemented yet!");
-      alert("Openning files is not implemented yet!");
-    }
-  }
-  function navigateInHistory(n: number) {
-    const newPath = getPathFromStringAndDesktop(
-      windowData.history[windowData.historyPointer + n],
-      windowData.target.desktop
-    );
-    if (newPath) {
-      windowData.historyPointer += n;
-      windowData.target = newPath;
-    } else {
-      // @todo I don't know what to dow here, maybe set the historyPointer to 0 and re-check or something
-    }
-    windowsStore.refresh();
-  }
 
   // Setups
   onMount(() => {
@@ -339,48 +298,7 @@
     }}
     on:touchstart={handleTouchStart}
   >
-    <!-- History navigators -->
-    <div class="flex items-center me-2">
-      <button
-        class="w-fit py-1 px-1 text-2xl btn rounded-s border border-brdr border-e-0"
-        disabled={windowData.historyPointer === 0}
-        on:click={() => {
-          navigateInHistory(-1);
-        }}
-      >
-        <svg
-          width="1em"
-          height="1em"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M14 5L9 12L14 19" stroke-linecap="round" />
-        </svg>
-      </button>
-      <button
-        class="w-fit py-1 px-1 text-2xl btn rounded-e border border-brdr"
-        disabled={windowData.historyPointer >= windowData.history.length - 1}
-        on:click={() => {
-          navigateInHistory(1);
-        }}
-        ><svg
-          width="1em"
-          height="1em"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-          ><path d="M10 5L14.5 12L10 19" stroke-linecap="round" />
-        </svg></button
-      >
-    </div>
-    <input
-      class="bg-base-txt/5 text-base-txt border border-brdr font-bold py-1 px-2 rounded-md sm:me-10 w-20 me-4 sm:w-40 md:w-[20rem]"
-      type="text"
-      value={windowData.target.path}
-    />
+    <slot name="header" />
     <!-- Actions bottons -->
     <div class="ms-auto flex items-center text-base-txt gap-1 sm:gap-3">
       <!-- Minimize -->
@@ -460,28 +378,13 @@
 
   <!-- Content -->
   <div
-    class="grow bg-base-100 {fullScreenShow
+    class="grow bg-base-100
+{fullScreenShow
       ? ''
-      : 'shadow-[inset_-0.5px_-0.5px_1px_white] rounded-b-lg border'} border-black border-t-base-100 border-t
-  w-full flex
-  "
+      : 'shadow-[inset_-0.5px_-0.5px_1px_white] rounded-b-lg border'}
+      border-black border-t-base-100 border-t w-full flex"
   >
-    {#if isFolder(windowData.target)}
-      <!-- Nav -->
-      <AsideNav
-        {reposition}
-        target={windowData.target}
-        {pushToHistory}
-        layerIndex={windowData.layerIndex}
-      />
-      <!-- Files & Folders -->
-      <FilesAndFoldersGrid
-        {reposition}
-        target={windowData.target}
-        {pushToHistory}
-        layerIndex={windowData.layerIndex}
-      />
-    {/if}
+    <slot name="window-content" {reposition} />
   </div>
   {#if !fullScreenShow}
     <Resizable bind:positions {minH} {minW} />

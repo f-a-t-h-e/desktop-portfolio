@@ -1,6 +1,25 @@
 <script lang="ts">
+  import type DesktopPath from "$lib/system/DesktopPath";
+  import type FilePath from "$lib/system/FilePath";
+  import type FolderPath from "$lib/system/FolderPath";
+  import { isFolder } from "$lib/system/Path";
   import { windowsStore } from "$lib/windows.store";
-  import Window from "./Window.svelte";
+  import FileWindow from "./FileWindow.svelte";
+  import FolderWindow from "./FolderWindow.svelte";
+  function isFolderWindowData(
+    data: (typeof $windowsStore)[number]
+  ): data is typeof data & {
+    target: FolderPath | DesktopPath;
+  } {
+    return isFolder(data.target);
+  }
+  function isFileWindowData(
+    data: (typeof $windowsStore)[number]
+  ): data is typeof data & {
+    target: FilePath;
+  } {
+    return !isFolder(data.target);
+  }
 </script>
 
 <div
@@ -97,5 +116,10 @@
 </div>
 <!-- You need to track the items with `(windowData.ID)` to avoid the item being used by the HTMLElement before it after a deletion/revalidation -->
 {#each $windowsStore as windowData (windowData.ID)}
-  <Window {windowData} />
+  {#if isFolderWindowData(windowData)}
+    <!-- Don't spreed here so the same object in the store gets updated from the components -->
+    <FolderWindow {windowData} />
+  {:else if isFileWindowData(windowData)}
+    <FileWindow {windowData} />
+  {/if}
 {/each}

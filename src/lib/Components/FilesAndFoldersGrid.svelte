@@ -11,8 +11,9 @@
   import { windowsStore } from "$lib/windows.store";
   import { desktopStore } from "$lib/desktop.store";
   import { fileOrFolderNamingStore } from "$lib/fileOrFolderNaming.store";
-  export let target: FolderPath | undefined | null;
-  export let pushToHistory: (fileOrFolder: FilePath | FolderPath) => unknown;
+  import type DesktopPath from "$lib/system/DesktopPath";
+  export let target: FolderPath | DesktopPath | undefined | null;
+  export let pushToHistory: (fileOrFolder: FolderPath) => unknown;
   export let layerIndex: string;
   export let reposition = "1";
   let oldRep = "1";
@@ -149,7 +150,7 @@
   {#if items.length}
     <div
       bind:this={theDiv}
-      class="grid w-full h-full relative z-0 pointer-events-none [&>*]:pointer-events-auto"
+      class="flex flex-col w-full h-full relative z-0 pointer-events-none [&>*]:pointer-events-auto"
       on:mousedown={(e) => {
         if (e.currentTarget === e.target) {
           e.preventDefault();
@@ -173,8 +174,12 @@
       {#each items as fileOrFolder, i (fileOrFolder.id)}
         <button
           class="flex items-center px-3 h-fit gap-1 cursor-pointer hover:underline decoration-white min-w-fit focus:bg-primary-light outline-none"
-          on:click|stopPropagation={(e) => {
-            pushToHistory(fileOrFolder);
+          on:dblclick={(e) => {
+            if (isFolder(fileOrFolder)) {
+              pushToHistory(fileOrFolder);
+            } else {
+              windowsStore.open(fileOrFolder);
+            }
           }}
           on:contextmenu|preventDefault|stopPropagation={(e) => {
             if (isFolder(fileOrFolder)) {
@@ -324,24 +329,30 @@
           }}
         >
           {#if isFolder(fileOrFolder)}
+          <span class="text-lg flex items-center justify-center">
             <svg
-              width="1em"
+            width="1em"
               height="1em"
               viewBox="0 0 50 50"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-            >
+              >
               <path
-                class="fill-primary-dark stroke-primary-txt"
-                d="M22.9 9.075L22.9375 9.125H23H41C42.4931 9.125 43.4487 9.37546 44.0366 9.96339C44.6245 10.5513 44.875 11.5069 44.875 13V41C44.875 42.4931 44.6245 43.4487 44.0366 44.0366C43.4487 44.6245 42.4931 44.875 41 44.875H9C7.50692 44.875 6.55132 44.6245 5.96339 44.0366C5.37546 43.4487 5.125 42.4931 5.125 41V9C5.125 7.50692 5.37546 6.55132 5.96339 5.96339C6.55132 5.37546 7.50692 5.125 9 5.125H19.9375L22.9 9.075Z"
-                stroke-width="0.25"
+              class="fill-primary-dark stroke-primary-txt"
+              d="M22.9 9.075L22.9375 9.125H23H41C42.4931 9.125 43.4487 9.37546 44.0366 9.96339C44.6245 10.5513 44.875 11.5069 44.875 13V41C44.875 42.4931 44.6245 43.4487 44.0366 44.0366C43.4487 44.6245 42.4931 44.875 41 44.875H9C7.50692 44.875 6.55132 44.6245 5.96339 44.0366C5.37546 43.4487 5.125 42.4931 5.125 41V9C5.125 7.50692 5.37546 6.55132 5.96339 5.96339C6.55132 5.37546 7.50692 5.125 9 5.125H19.9375L22.9 9.075Z"
+              stroke-width="0.25"
               />
               <path
                 class="fill-ico stroke-base-txt"
                 d="M20 17.625H20.0742L20.1097 17.5599L23.0742 12.125H41C42.4907 12.125 43.4423 12.3996 44.0302 13.0833C44.6234 13.7731 44.875 14.9102 44.875 16.7143V42C44.875 42.9453 44.402 43.6591 43.6805 44.1415C42.9555 44.6264 41.9812 44.875 41 44.875H9C8.01883 44.875 7.0445 44.6264 6.31948 44.1415C5.59799 43.6591 5.125 42.9453 5.125 42V21.1143C5.125 19.2071 6.85681 17.625 9 17.625H20Z"
                 stroke-width="0.25"
-              />
-            </svg>
+                />
+              </svg>
+            </span>
+          {:else if fileOrFolder.contents.iFrame}
+          <span class="text-lg flex items-center justify-center">
+            {@html fileOrFolder.contents.icon}
+          </span>
           {:else}
             {@html iconsMap[fileOrFolder.fileType]}
           {/if}

@@ -34,6 +34,9 @@
     }
   }}
 />
+<svelte:head>
+  <title>Ubuntu - Svelte</title>
+</svelte:head>
 <!-- {@html `<style>:root{--global-x:${$globalPositionStore.x};--global-y:${$globalPositionStore.y}}</style>`} -->
 <!-- <svg
   class="block fixed w-[11px] h-[17px] z-[100] pointer-events-none"

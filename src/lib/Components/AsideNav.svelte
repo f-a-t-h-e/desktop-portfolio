@@ -8,8 +8,9 @@
   import { isFolder } from "$lib/system/Path";
   import { onDestroy, onMount } from "svelte";
   import Resizable from "./Resizable.svelte";
-  export let target: FolderPath | undefined | null;
-  export let pushToHistory: (fileOrFolder: FilePath | FolderPath) => unknown;
+  import type DesktopPath from "$lib/system/DesktopPath";
+  export let target: FolderPath | DesktopPath | undefined | null;
+  export let pushToHistory: (fileOrFolder: FolderPath) => unknown;
   export let layerIndex: string;
   export let reposition = "1";
   let oldRep = "1";
@@ -86,7 +87,9 @@
   "
       data-path-name={fileOrFolder.path}
       on:click|preventDefault|stopPropagation={(e) => {
-        pushToHistory(fileOrFolder);
+        if (isFolder(fileOrFolder)) {
+          pushToHistory(fileOrFolder);
+        }
       }}
       on:mousedown|stopPropagation|preventDefault={() => {
         layersStore.open({ layerIndex: layerIndex });

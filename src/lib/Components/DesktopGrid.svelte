@@ -89,7 +89,6 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- @todo : Use `ResizeObserver` instead of binding to the width and height like this -->
 <div
-  dir="rtl"
   id="desktop"
   class="w-full h-full p-0 z-0
   grid grid-cols-[repeat(auto-fill,minmax(6.125rem,1fr))] grid-rows-[repeat(auto-fill,minmax(6.125rem,1fr))]

@@ -55,41 +55,41 @@ function createWindowsStore() {
       const targetPath = getPathFromStringAndDesktop(path, desktop);
       if (targetPath) {
         // open
-        if (isFolder(targetPath)) {
-          update((windows) => {
-            let saved = windows.find((w) => {
-              if (w.target === targetPath) {
-                return true;
-              }
-              return false;
-            });
-            if (saved) {
-              saved.isMinimized = false;
-              layersStore.open({ layerIndex: saved.layerIndex });
-              return windows;
+        // if (isFolder(targetPath)) {
+        update((windows) => {
+          let saved = windows.find((w) => {
+            if (w.target === targetPath) {
+              return true;
             }
-            layersStore.open({ layerIndex: "w_" + windowsIndex });
-            return [
-              ...windows,
-              {
-                // ...newWindow,
-                ID: windowsIndex,
-                history: [targetPath.path],
-                historyPointer: 0,
-                layerIndex: "w_" + windowsIndex++,
-                isMinimized: false,
-                // path: targetPath.path,
-                target: targetPath,
-                // filesAndFolders: newWindow.contents,
-                // title: newWindow.name,
-              },
-            ];
+            return false;
           });
-          return;
-        } else {
-          alert("Opening files is not implemented yet!");
-        }
-      }else{
+          if (saved) {
+            saved.isMinimized = false;
+            layersStore.open({ layerIndex: saved.layerIndex });
+            return windows;
+          }
+          layersStore.open({ layerIndex: "w_" + windowsIndex });
+          return [
+            ...windows,
+            {
+              // ...newWindow,
+              ID: windowsIndex,
+              history: [targetPath.path],
+              historyPointer: 0,
+              layerIndex: "w_" + windowsIndex++,
+              isMinimized: false,
+              // path: targetPath.path,
+              target: targetPath,
+              // filesAndFolders: newWindow.contents,
+              // title: newWindow.name,
+            },
+          ];
+        });
+        return;
+        // } else {
+        //   alert("Opening files is not implemented yet!");
+        // }
+      } else {
         return;
       }
     },
