@@ -8,13 +8,47 @@ type ContextMenuStore =
       isOpen: true;
       x: number;
       y: number;
-    } &({
-      action?: "";
-      target: FolderPath|DesktopPath;
-    }|{
-      action: "folder";
-      target: FolderPath;
-    }))
+      estH?: number;
+    } & (
+      | {
+          action: "desktop";
+          actions: (
+            | (
+                | { name: string; fn?: () => unknown; subActions?: never }
+                | {
+                    name: string;
+                    fn?: never;
+                    subActions: (
+                      | { name: string; fn?: () => unknown }
+                      | "break"
+                    )[];
+                    estH?: number;
+                    estY?: number;
+                  }
+              )
+            | "break"
+          )[];
+        }
+      | {
+          action: "folder";
+          actions: (
+            | (
+                | { name: string; fn?: () => unknown; subActions?: never }
+                | {
+                    name: string;
+                    fn?: never;
+                    subActions: (
+                      | { name: string; fn?: () => unknown }
+                      | "break"
+                    )[];
+                    estH?: number;
+                    estY?: number;
+                  }
+              )
+            | "break"
+          )[];
+        }
+    ))
   | {
       isOpen: false;
     };
@@ -24,13 +58,13 @@ function createContextMenuStore() {
   });
   return {
     subscribe,
-    open: (params: ContextMenuStore) => {    
+    open: (params: ContextMenuStore) => {
       set({
         ...params,
       });
     },
     close: () => {
-      set({ isOpen: false })
+      set({ isOpen: false });
     },
   };
 }

@@ -179,7 +179,7 @@
       wOn = true;
       cursor = "ew-resize";
     }}
-    class="block cursor-ew-resize absolute w-1 h-[calc(100%-.5rem)] top-1 left-0 opacity-0"
+    class="block cursor-ew-resize absolute w-2 h-[calc(100%-1rem)] top-2 left-0 opacity-0"
   ></span>
 {/if}
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -197,7 +197,7 @@
       eOn = true;
       cursor = "ew-resize";
     }}
-    class="block cursor-ew-resize absolute w-1 h-[calc(100%-.5rem)] top-1 right-0 opacity-0"
+    class="block cursor-ew-resize absolute w-2 h-[calc(100%-1rem)] top-2 right-0 opacity-0"
   ></span>
 {/if}
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -215,7 +215,7 @@
       nOn = true;
       cursor = "ns-resize";
     }}
-    class="block cursor-ns-resize absolute w-[calc(100%-.5rem)] h-1 top-0 left-1 opacity-0"
+    class="block cursor-ns-resize absolute w-[calc(100%-1rem)] h-2 top-0 left-2 opacity-0"
   ></span>
 {/if}
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -233,7 +233,7 @@
       sOn = true;
       cursor = "ns-resize";
     }}
-    class="block cursor-ns-resize absolute w-[calc(100%-.5rem)] h-1 bottom-0 left-1 opacity-0"
+    class="block cursor-ns-resize absolute w-[calc(100%-1rem)] h-2 bottom-0 left-2 opacity-0"
   ></span>
 {/if}
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -251,7 +251,7 @@
       nwOn = true;
       cursor = "nwse-resize";
     }}
-    class="block cursor-nwse-resize absolute w-1 h-1 top-0 left-0 opacity-0"
+    class="block cursor-nwse-resize absolute w-2 h-2 top-0 left-0 opacity-0"
   ></span>
 {/if}
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -269,7 +269,7 @@
       neOn = true;
       cursor = "nesw-resize";
     }}
-    class="block cursor-nesw-resize absolute w-1 h-1 top-0 right-0 opacity-0"
+    class="block cursor-nesw-resize absolute w-2 h-2 top-0 right-0 opacity-0"
   ></span>
 {/if}
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -287,7 +287,7 @@
       swOn = true;
       cursor = "nesw-resize";
     }}
-    class="block cursor-nesw-resize absolute w-1 h-1 bottom-0 left-0 opacity-0"
+    class="block cursor-nesw-resize absolute w-2 h-2 bottom-0 left-0 opacity-0"
   ></span>
 {/if}
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -305,6 +305,6 @@
       seOn = true;
       cursor = "nwse-resize";
     }}
-    class="block cursor-nwse-resize absolute w-1 h-1 bottom-0 right-0 opacity-0"
+    class="block cursor-nwse-resize absolute w-2 h-2 bottom-0 right-0 opacity-0"
   ></span>
 {/if}

@@ -60,7 +60,6 @@
       // Wait for the transition
     }, 305);
   }
-  
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -72,7 +71,7 @@
       e.preventDefault();
     }
   }}
-  style="width: {positions.width}px;--x: {$globalPositionStore.x - positions.left}px;"
+  style="width: {positions.width}px;--x: calc(var(--global-x) * 1px - {positions.left}px);"
 >
   {#each Object.values($desktopStore.contents) as fileOrFolder (fileOrFolder.id)}
     <button
@@ -82,8 +81,8 @@
   after:content-[attr(data-path-name)] after:z-[1] after:px-3 after:pointer-events-none after:opacity-0
   after:transition-opacity after:-translate-x-1/2
   after:w-fit after:left-[var(--x,0px)] after:top-[calc(100%+4px)]
-  hover:after:opacity-100 
-  {fileOrFolder === target ? "bg-hvr/50" :"hover:bg-hvr/20"}
+  hover:after:opacity-100
+  {fileOrFolder === target ? 'bg-hvr/50' : 'hover:bg-hvr/20'}
   "
       data-path-name={fileOrFolder.path}
       on:click|preventDefault|stopPropagation={(e) => {
@@ -93,9 +92,9 @@
         layersStore.open({ layerIndex: layerIndex });
       }}
     >
-      {#if isFolder(fileOrFolder)}
+      <span class="text-base-txt-sec w-[1em] h-[1em]">
+        {#if isFolder(fileOrFolder)}
           <svg
-          class="text-base-txt-sec"
             width="1em"
             height="1em"
             viewBox="0 0 50 50"
@@ -113,10 +112,13 @@
               stroke-width="3"
             />
           </svg>
-      {:else}
-        {@html iconsMap[fileOrFolder.fileType]}
-      {/if}
-      <span class="text-nowrap text-white">
+        {:else}
+          {@html iconsMap[fileOrFolder.fileType]}
+        {/if}
+      </span>
+      <span
+        class="text-nowrap text-white text-ellipsis block max-w-full overflow-clip"
+      >
         {fileOrFolder.name}
       </span>
     </button>

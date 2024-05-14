@@ -10,6 +10,7 @@
   import FileItem from "./FileItem.svelte";
   import type FolderPath from "$lib/system/FolderPath";
   import type FilePath from "$lib/system/FilePath";
+  import { fileOrFolderNamingStore } from "$lib/fileOrFolderNaming.store";
 
   let desktopDimentions = {
     width: 0,
@@ -28,36 +29,40 @@
    * The current `DropArea` the drag is over
    */
   let isDraggingOver: null | number = null;
+  /**
+   * @key is the same as the one used in `$desktopStore.gridItems`
+   */
   let selectedItems: { [key: number]: FilePath | FolderPath } = {};
-  let selectableItems:{
+  let selectableItems: {
     item: FilePath | FolderPath;
     i: number;
     spans?: HTMLSpanElement[] | undefined;
   }[] = [];
+  let dragOverOn = false;
   $: if ($desktopStore.gridItems) {
     selectableItems = $desktopStore.gridItems.reduce(
-    (prev, item, i) => {
-      if (item) {
-        const savdItem = selectableItems.find(v=>v.i===i);
-        if (savdItem && savdItem.item === item) {
-          prev.push(savdItem);
-        }else{
-          prev.push({
-            item,
-            i,
-          });
+      (prev, item, i) => {
+        if (item) {
+          const savdItem = selectableItems.find((v) => v.i === i);
+          if (savdItem && savdItem.item === item) {
+            prev.push(savdItem);
+          } else {
+            prev.push({
+              item,
+              i,
+            });
+          }
         }
-      }
-      return prev;
-    },
-    [] as {
-      item: FilePath | FolderPath;
-      i: number;
-      spans?: HTMLSpanElement[];
-    }[]
-  );
+        return prev;
+      },
+      [] as {
+        item: FilePath | FolderPath;
+        i: number;
+        spans?: HTMLSpanElement[];
+      }[]
+    );
   }
-  
+
   // let contextmenu: HTMLDivElement;
   function onUp() {
     desktopDimentions.down = false;
@@ -88,7 +93,7 @@
   id="desktop"
   class="w-full h-full p-0 z-0
   grid grid-cols-[repeat(auto-fill,minmax(6.125rem,1fr))] grid-rows-[repeat(auto-fill,minmax(6.125rem,1fr))]
-  items-center justify-items-center"
+  items-center justify-items-center {dragOverOn ? 'bg-primary/15' : ''}"
   bind:clientWidth={desktopDimentions.width}
   bind:clientHeight={desktopDimentions.height}
   on:mousedown={(e) => {
@@ -127,13 +132,112 @@
     if (e.target === e.currentTarget) {
       e.preventDefault();
       contextMenuStore.open({
-        target: $desktopStore,
         x: e.clientX,
         y: e.clientY,
         isOpen: true,
+        action: "desktop",
+        estH: 372,
+        actions: [
+          {
+            name: "New Folder",
+            fn() {
+              fileOrFolderNamingStore.open({
+                isNew: true,
+                target: $desktopStore,
+                isOpen: true,
+                isFile: false,
+                settings: {
+                  exclude: Object.keys($desktopStore.contents),
+                  invalidChars: ["/", "\\", '"', "'", "`", ","]
+                }
+              });
+            },
+          },
+          "break",
+          {
+            name: "Paste",
+          },
+          {
+            name: "Undo",
+          },
+          "break",
+          {
+            name: "Select All",
+            fn() {
+              selectedItems = $desktopStore.gridItems.reduce(
+                (prev, item, i) => {
+                  if (item) {
+                    prev[i] = item;
+                  }
+                  return prev;
+                },
+                selectedItems,
+              );
+            },
+          },
+          "break",
+          {
+            name: "Arrange Icons",
+          },
+          {
+            name: "Arrange By...",
+            estH: 243,
+            subActions: [
+              {
+                name: "Keep Arranged.."
+              },
+              {
+                name: "Keep Stacked by type.."
+              },
+              {
+                name: "Sort Home/Drives/Trash..."
+              },
+              "break",
+              {
+                name: "Sort by Name"
+              },
+              {
+                name: "Sort by Name Descending"
+              },
+              {
+                name: "Sort by Modified Time"
+              },
+              {
+                name: "Sort by Type"
+              },
+              {
+                name: "Sort by Size"
+              },
+            ]
+          },
+          "break",
+          {
+            name: "Show Desktop in Files",
+          },
+          {
+            name: "Open in Terminal",
+          },
+          "break",
+          {
+            name: "Change Background",
+          },
+          "break",
+          {
+            name: "Desktop Icons Settings",
+          },
+          {
+            name: "Display Settings",
+          },
+        ],
       });
       desktopDimentions.down = false;
     }
+  }}
+  on:dragenter={() => {
+    dragOverOn = true;
+  }}
+  on:dragleave={() => {
+    dragOverOn = false;
   }}
 >
   {#each $desktopStore.gridItems as item, i}

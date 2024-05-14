@@ -6,9 +6,50 @@
       ? ""
       : String($fileOrFolderNamingStore.target.name)
     : "";
+  let updatingValue = "";
+  let isValid = false;
   // export let targetToRename: Path | undefined;
   let targetInput: HTMLInputElement;
   let targetForm: HTMLFormElement;
+
+  $: if ($fileOrFolderNamingStore.isOpen && targetInput) {
+    targetInput.focus();
+  }
+  $: if (typeof updatingValue === "string" && $fileOrFolderNamingStore.isOpen) {
+    let passed = true;
+    if (updatingValue.trim() === "") {
+      passed = false;
+    }
+    if ($fileOrFolderNamingStore.settings) {
+      if (
+        $fileOrFolderNamingStore.settings.exclude &&
+        $fileOrFolderNamingStore.settings.exclude.includes(
+          updatingValue
+        )
+      ) {
+        passed = false;
+      } else if ($fileOrFolderNamingStore.settings.invalidChars) {
+        for (
+          let i = 0;
+          i < $fileOrFolderNamingStore.settings.invalidChars.length;
+          i++
+        ) {
+          if (
+            updatingValue.includes(
+              $fileOrFolderNamingStore.settings.invalidChars[i]
+            )
+          ) {
+            passed = false;
+          }
+        }
+      }
+    }
+    if (passed) {
+      isValid = true;
+    } else {
+      isValid = false;
+    }
+  }
 </script>
 
 <svelte:document
@@ -37,27 +78,35 @@ rounded-lg flex flex-col px-3 py-3 gap-2 z-[10000]
         "
         bind:this={targetInput}
         {value}
-        pattern="[^\/]*"
         minlength="1"
+        aria-invalid={!isValid}
         required
-        autofocus
+        on:input={(e) => {
+          updatingValue = e.currentTarget.value.trim();
+        }}
       />
       {#if $fileOrFolderNamingStore.isNew}
         <button
-          class="bg-primary w-full rounded-md disabled:opacity-25 text-primary-txt"
+          class="bg-primary w-full rounded-md disabled:opacity-25 text-primary-txt disabled:pointer-events-none"
           on:click|preventDefault={() => {
-            fileOrFolderNamingStore.apply(targetInput.value);
+            if (isValid) {
+              fileOrFolderNamingStore.apply(targetInput.value.trim());
+            }
           }}
+          disabled={!isValid}
         >
           <!-- disabled={!value || value.includes("/")} -->
           Ok
         </button>
       {:else}
         <button
-          class="bg-primary w-full rounded-md disabled:opacity-25 text-primary-txt"
+          class="bg-primary w-full rounded-md disabled:opacity-25 text-primary-txt disabled:pointer-events-none"
           on:click|preventDefault={() => {
-            fileOrFolderNamingStore.apply(targetInput.value);
+            if (isValid) {
+              fileOrFolderNamingStore.apply(targetInput.value);
+            }
           }}
+          disabled={!isValid}
         >
           <!-- disabled={!value || value.includes("/")} -->
           Rename

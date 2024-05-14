@@ -6,6 +6,7 @@
   import { globalPositionStore } from "$lib/globalPosition.store";
   import { globalWindowDetailsStore } from "$lib/globalWindowDetails.store";
   import DesktopGrid from "$lib/Components/DesktopGrid.svelte";
+  import { contextMenuStore } from "$lib/contextMenu.store";
 
   let w: number;
   let h: number;
@@ -27,6 +28,11 @@
   on:mouseup={globalPositionStore.docUtilFunctions.onUp}
   on:touchcancel={globalPositionStore.docUtilFunctions.onUp}
   on:touchend={globalPositionStore.docUtilFunctions.onUp}
+  on:keydown={e=>{
+    if (e.key == "Escape") {
+      contextMenuStore.close();
+    }
+  }}
 />
 <!-- {@html `<style>:root{--global-x:${$globalPositionStore.x};--global-y:${$globalPositionStore.y}}</style>`} -->
 <!-- <svg

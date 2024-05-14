@@ -52,35 +52,8 @@ relative
       isDragging = null;
     }}
     on:mousedown={(e) => {
-      if (Object.keys(selectedItems).length > 1) {
-        if (e.shiftKey) {
-          if (selectedItems[i]) {
-            delete selectedItems[i];
-            selectedItems = selectedItems;
-          } else {
-            selectedItems[i] = targetFile.target;
-          }
-        } else if (e.ctrlKey) {
-          if (selectedItems[i]) {
-            delete selectedItems[i];
-            selectedItems = selectedItems;
-          } else {
-            selectedItems[i] = targetFile.target;
-          }
-        } else {
-          if (!selectedItems[i]) {
-            selectedItems = { [i]: targetFile.target };
-          }
-        }
-      } else if (Object.keys(selectedItems).length) {
-        if (e.shiftKey) {
-          if (selectedItems[i]) {
-            delete selectedItems[i];
-            selectedItems = selectedItems;
-          } else {
-            selectedItems[i] = targetFile.target;
-          }
-        } else if (e.ctrlKey) {
+      if (Object.keys(selectedItems).length) {
+        if (e.shiftKey || e.ctrlKey) {
           if (selectedItems[i]) {
             delete selectedItems[i];
             selectedItems = selectedItems;
@@ -97,13 +70,11 @@ relative
       }
     }}
     on:click={(e) => {
-      if (e.screenX !== 0 && e.screenY !== 0) {
         if (e.screenX !== 0 && e.screenY !== 0) {
           if (Object.keys(selectedItems).length) {
             if (!e.shiftKey && !e.ctrlKey) {
               selectedItems = { [i]: targetFile.target };
             }
-          }
         }
       }
     }}

@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { contextMenuStore } from "$lib/contextMenu.store";
   import { desktopStore } from "$lib/desktop.store";
+  import { fileOrFolderNamingStore } from "$lib/fileOrFolderNaming.store";
   import type DesktopPath from "$lib/system/DesktopPath";
   import type FilePath from "$lib/system/FilePath";
   import type FolderPath from "$lib/system/FolderPath";
@@ -46,8 +48,7 @@
   flex flex-col items-center
   relative
   {selectedItems[i] ? '[&>*]:bg-primary/60' : ''}"
-  on:mousedown|stopPropagation
-  on:click|stopPropagation={(e) => {
+  on:dblclick={(e) => {
     windowsStore.openPath({
       path: targetFolder.path,
       desktop: $desktopStore,
@@ -58,36 +59,79 @@
   on:dragend={(e) => {
     isDragging = null;
   }}
+  on:contextmenu|preventDefault|stopPropagation={(e) => {
+    contextMenuStore.open({
+      x: e.clientX,
+      y: e.clientY,
+      action: "folder",
+      isOpen: true,
+      estH: 567,
+      actions: [
+        {
+          name: "Open",
+          fn: () => {
+            windowsStore.openPath({
+              path: targetFolder.path,
+              desktop: $desktopStore,
+            });
+          },
+        },
+        "break",
+        {
+          name: "Cut",
+        },
+        {
+          name: "Copy",
+        },
+        {
+          name: "Rename...",
+          fn: () => {
+            fileOrFolderNamingStore.open({
+              isNew: false,
+              // isFile: !isFolder(fileOrFolder),
+              isOpen: true,
+              target: targetFolder.target,
+              settings: {
+                exclude: Object.keys(
+                  targetFolder.target.parent.contents
+                ).filter((name) => name !== targetFolder.name),
+              },
+            });
+          },
+        },
+        "break",
+        {
+          name: "Move To Trash",
+          fn: () => {
+            delete targetFolder.target.parent.contents[targetFolder.name];
+            $desktopStore.apply();
+            windowsStore.revalidate();
+          },
+        },
+        "break",
+        {
+          name: `Compress ${Object.keys(selectedItems).length || 1} file${Object.keys(selectedItems).length > 1 ? "s" : ""}`,
+        },
+        {
+          name: `New Folder with ${Object.keys(selectedItems).length || 1} item${Object.keys(selectedItems).length > 1 ? "s" : ""}`,
+        },
+        "break",
+        {
+          name: "Properties",
+        },
+        "break",
+        {
+          name: "Show in Files",
+        },
+        {
+          name: "Open in Terminal",
+        },
+      ],
+    });
+  }}
   on:mousedown={(e) => {
-    if (Object.keys(selectedItems).length > 1) {
-      if (e.shiftKey) {
-        if (selectedItems[i]) {
-          delete selectedItems[i];
-          selectedItems = selectedItems;
-        } else {
-          selectedItems[i] = targetFolder.target;
-        }
-      } else if (e.ctrlKey) {
-        if (selectedItems[i]) {
-          delete selectedItems[i];
-          selectedItems = selectedItems;
-        } else {
-          selectedItems[i] = targetFolder.target;
-        }
-      } else {
-        if (!selectedItems[i]) {
-          selectedItems = { [i]: targetFolder.target };
-        }
-      }
-    } else if (Object.keys(selectedItems).length) {
-      if (e.shiftKey) {
-        if (selectedItems[i]) {
-          delete selectedItems[i];
-          selectedItems = selectedItems;
-        } else {
-          selectedItems[i] = targetFolder.target;
-        }
-      } else if (e.ctrlKey) {
+    if (Object.keys(selectedItems).length) {
+      if (e.shiftKey || e.ctrlKey) {
         if (selectedItems[i]) {
           delete selectedItems[i];
           selectedItems = selectedItems;
@@ -105,11 +149,9 @@
   }}
   on:click={(e) => {
     if (e.screenX !== 0 && e.screenY !== 0) {
-      if (e.screenX !== 0 && e.screenY !== 0) {
-        if (Object.keys(selectedItems).length) {
-          if (!e.shiftKey && !e.ctrlKey) {
-            selectedItems = { [i]: targetFolder.target };
-          }
+      if (Object.keys(selectedItems).length) {
+        if (!e.shiftKey && !e.ctrlKey) {
+          selectedItems = { [i]: targetFolder.target };
         }
       }
     }

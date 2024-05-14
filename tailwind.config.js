@@ -16,8 +16,8 @@ export default {
         "base-200": "#373737ff",
         "base-txt": "#F7F7F7ff",
         "base-200-dis": "#2A2A2Aff",
-        "base-200-dis-txt": "#797979ff",
-        "base-300": "#2C2C2Cff",
+        "base-200-dis-txt": "#929292ff",
+        "base-300": "#1D1D1Dff",
         "base-txt-sec" : "#8F8F8Fff",
         // 
         "brdr": "#181818ff",

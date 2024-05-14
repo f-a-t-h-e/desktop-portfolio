@@ -377,7 +377,7 @@
       >
     </div>
     <input
-      class="bg-base-300 text-base-txt border border-brdr font-bold py-1 px-2 rounded-md sm:me-10 w-20 me-4 sm:w-40 md:w-[20rem]"
+      class="bg-base-txt/5 text-base-txt border border-brdr font-bold py-1 px-2 rounded-md sm:me-10 w-20 me-4 sm:w-40 md:w-[20rem]"
       type="text"
       value={windowData.target.path}
     />

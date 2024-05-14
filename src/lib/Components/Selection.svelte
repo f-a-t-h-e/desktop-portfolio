@@ -142,7 +142,6 @@
 
   $: coordinates.xStart = startX;
   $: coordinates.yStart = startY;
-  // $: console.log(coordinates, startX);
 </script>
 
 <!-- @todo : Remove these and enable it from the layout (it's enables from the window) -->
